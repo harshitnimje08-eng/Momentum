@@ -24,26 +24,26 @@ jobs:
           npm init -y
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/android@latest @capacitor/assets
           
-          # 1. Setup folders
           mkdir -p www
           [ -f "index.html" ] && mv index.html www/
           
-          # 2. Initialize and Add Android
           npx cap init "Momentum" "com.harshitnimje.momentum" --web-dir www
           npx cap add android
           
-          # 3. Generate Icons (Simple version)
+          # Force generate icons and overwrite existing ones
           if [ -f "icon.png" ]; then
-            echo "✅ icon.png detected. Generating assets..."
-            npx capacitor-assets generate --android
+            echo "✅ icon.png detected. Forcing icon replacement..."
+            npx capacitor-assets generate --android --assetPath icon.png
           else
-            echo "❌ ERROR: icon.png not found in the main folder!"
+            echo "❌ ERROR: icon.png not found!"
             exit 1
           fi
           
-          # 4. Final Sync and Build
+          # Final sync to push icons into the Android project
           npx cap sync android
-          cd android && ./gradlew assembleDebug --no-daemon
+          
+          # Clean and Build
+          cd android && ./gradlew clean assembleDebug --no-daemon
 
       - name: Upload Result
         uses: actions/upload-artifact@v4
