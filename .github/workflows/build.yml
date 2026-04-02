@@ -15,24 +15,27 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21' # This is the fix
+          java-version: '21'
           distribution: 'temurin'
-          cache: 'gradle'
+          # No cache here to avoid that error
 
       - name: Install and Build
         run: |
           npm init -y
           npm install @capacitor/cli @capacitor/core @capacitor/android
           
-          # Force create www and move index.html if it's outside
+          # Force create www and ensure index.html is there
           mkdir -p www
-          [ -f "index.html" ] && mv index.html www/
+          if [ -f "index.html" ]; then
+            mv index.html www/
+          fi
           
+          # Initialize and build
           npx cap init "MyApp" "com.test.app" --web-dir www
           npx cap add android
           npx cap copy android
           
-          # Build the APK
+          # This command actually creates the APK file
           cd android && ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
