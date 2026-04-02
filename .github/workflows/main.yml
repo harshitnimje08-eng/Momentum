@@ -25,7 +25,7 @@ jobs:
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/android@latest
           mkdir -p www
           if [ -f "index.html" ]; then mv index.html www/; fi
-          npx cap init "MyApp" "com.test.app" --web-dir www
+          npx cap init "Momentum" "com.harshitnimje.momentum" --web-dir www
           npx cap add android
           npx cap sync android
           cd android && ./gradlew assembleDebug --no-daemon
@@ -33,5 +33,13 @@ jobs:
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: My-Free-App
+          name: Momentum-Build-v1
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
