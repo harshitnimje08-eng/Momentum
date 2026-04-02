@@ -17,28 +17,32 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          # No cache here to avoid that error
 
       - name: Install and Build
         run: |
+          # 1. Start fresh
           npm init -y
-          npm install @capacitor/cli @capacitor/core @capacitor/android
           
-          # Force create www and ensure index.html is there
+          # 2. Install LATEST Capacitor
+          npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/android@latest
+          
+          # 3. Handle folders
           mkdir -p www
-          if [ -f "index.html" ]; then
-            mv index.html www/
-          fi
+          [ -f "index.html" ] && mv index.html www/
           
-          # Initialize and build
+          # 4. Initialize with specific latest version flags
           npx cap init "MyApp" "com.test.app" --web-dir www
           npx cap add android
-          npx cap copy android
           
-          # This command actually creates the APK file
+          # 5. Sync and build (using the latest gradle wrapper)
+          npx cap sync android
           cd android && ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mobile-App-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
         uses: actions/upload-artifact@v4
         with:
           name: Mobile-App-APK
