@@ -1,5 +1,5 @@
 name: Build Android APK
-on: [push]
+on: [push, workflow_dispatch]
 
 jobs:
   build:
@@ -12,23 +12,31 @@ jobs:
         with:
           node-version: 20
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21' # This is the fix
           distribution: 'temurin'
+          cache: 'gradle'
 
-      - name: Install Capacitor & Build
+      - name: Install and Build
         run: |
           npm init -y
           npm install @capacitor/cli @capacitor/core @capacitor/android
-          npx cap init "My App" "com.mycompany.app" --web-dir www
+          
+          # Force create www and move index.html if it's outside
+          mkdir -p www
+          [ -f "index.html" ] && mv index.html www/
+          
+          npx cap init "MyApp" "com.test.app" --web-dir www
           npx cap add android
           npx cap copy android
-          cd android && ./gradlew assembleDebug
+          
+          # Build the APK
+          cd android && ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: App-Package
+          name: Mobile-App-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
