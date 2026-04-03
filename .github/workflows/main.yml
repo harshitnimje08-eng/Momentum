@@ -33,7 +33,7 @@ jobs:
           
           # This line fixes your 'Uninstall' issue by bumping the version automatically
           sed -i 's/versionCode 1/versionCode ${{ github.run_number }}/' android/app/build.gradle
-          sed -i 's/versionName "1.0"/versionName "1.0.${{ github.run_number }}"/' android/app/build.gradle
+          sed -i 's/versionName "2.1"/versionName "2.1.${{ github.run_number }}"/' android/app/build.gradle
           
           if [ -f "assets/icon-foreground.png" ] && [ -f "assets/icon-background.png" ]; then
             echo "✅ Adaptive icon assets detected"
