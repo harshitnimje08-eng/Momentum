@@ -1,6 +1,15 @@
 name: Build APK
 on: 
-  workflow_dispatch: # Only builds when you manually click 'Run'
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: 'Version Code (Must be a number - e.g., 5)'
+        required: true
+        default: '1'
+      version_name:
+        description: 'Version Name (e.g., 2.2.1)'
+        required: true
+        default: '1.0.0'
 
 jobs:
   android-build:
@@ -26,14 +35,14 @@ jobs:
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/android@latest @capacitor/assets
           
           mkdir -p www
-          [ -f "index.html" ] && cp index.html www/ # Copying instead of moving to avoid errors
+          [ -f "index.html" ] && cp index.html www/
           
           npx cap init "Momentum" "com.harshitnimje.momentum" --web-dir www
           npx cap add android
           
-          # This line fixes your 'Uninstall' issue by bumping the version automatically
-          sed -i 's/versionCode 1/versionCode ${{ github.run_number }}/' android/app/build.gradle
-          sed -i 's/versionName "2.1"/versionName "2.1.${{ github.run_number }}"/' android/app/build.gradle
+          # Manually injecting the versions you typed in the GitHub popup
+          sed -i "s/versionCode 1/versionCode ${{ github.event.inputs.version_code }}/" android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "${{ github.event.inputs.version_name }}"/' android/app/build.gradle
           
           if [ -f "assets/icon-foreground.png" ] && [ -f "assets/icon-background.png" ]; then
             echo "✅ Adaptive icon assets detected"
@@ -48,5 +57,6 @@ jobs:
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          name: Momentum-Build-B${{ github.run_number }}
+          # Naming the zip file based on the version name you entered
+          name: Momentum-V${{ github.event.inputs.version_name }}
           path: android/app/build/outputs/apk/debug/app-debug.apk
